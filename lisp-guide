@@ -1,0 +1,169 @@
+A concise guide to Common Lisp
+
+First, let's get three things straight:
+
+(1) Lisp is a family of languages, and as such, there are many Lisps. However, about half the time, when someone says "Lisp", they are referring to Common Lisp, which is what I'm exclusively covering in this talk. From now on, whenever I say "Lisp", remember that I'm talking about Common Lisp only.
+(2) Common Lisp is not a purely functional language. Nor is it slow or large. It's not as difficult to learn as you might think, it has numerous optimizing native-code compilers, arrays and object-oriented programming features are built-in, and it's in active use today (not to mention having well over a dozen actively maintained implementations). Don't be scared of it.
+(3) I am going to lie to you in this talk. Possibly a lot. Why? Because I assume that you would rather learn enough Lisp to do something useful (like understand my OpenGL talk) then be given an agonizingly detailed (although technically correct) description of all the terms that we use to describe Lisp. I'll try to mark the lies with a "^"; if enough people are interested, then I'll correct them.
+
+Now then. Here's the big question: "How do Lisp"? Here's the big answer: by doing code to data.
+
+In my mind, programming is broken into those two parts of code and data.
+
+CODE
+
+Lisp code comes in three flavors: functions, macros, and special forms^. No bit of code can be more than one of these things at once, although all of these things eventually turn into each other. Macros are transformed into functions and special forms. Functions are composed of macros (see previous sentence), more functions, and special forms. Special forms are made of nothing^.
+
+    Macros: code generators
+	- run at *compile-time*
+	- never actually compiled into binary (or seen by the interpreter^, if you're using one of those)
+	- think C macros, just a lot more powerful^
+	- don't obey normal evaluation rules^
+	- many come built-in, we can also make our own
+
+    Special forms: building blocks of the universe
+	- handful of premade things that *cannot* be otherwise done with functions or macros
+	- if, block, return, tagbody, go, progn, quote
+	- don't obey normal evaluation rules
+	- we can't make these, only use the built-in ones
+
+    Functions: exactly what it says on the tin (http://tvtropes.org/pmwiki/pmwiki.php/Main/ExactlyWhatItSaysOnTheTin) (http://tvtropes.org/pmwiki/pmwiki.php/Film/SnakesOnAPlane)
+	- you know these!
+	- very much like functions in other languages, a Lisp function has a name and a return value, and may take parameters
+	- bonus features: optional, keyword, and variable-length arguments, multiple return values, docstrings, local and nameless (lambda) functions, closures
+	- built-in functions, and we can define our own
+
+...so what do these *look* like?
+
+Here's a macro:
+
+(setf x 10)
+
+Here's a special form:
+
+(quote foo)
+
+Here's a function (call):
+
+(mod 4180 60)
+
+How's that for consistent syntax? More examples:
+
+Functions:
+
+(+ 1 2)
+(funcall #'+ 1 2)
+(mod 9 2)
+(gl:uniformf offset-location 1.0 0.0 0.0)
+(quit)
+(list 0 "one" (quote two))
+(member 2 '(0 1 2 3))
+(boundp 'variable-name)
+(format t "the current value of x is ~a~%" x)
+
+Macros:
+
+(dotimes (i 10) (princ i))
+(setf x (+ x 10))
+(lambda (x y) (expt x y))
+(loop for i from 0 to 10 do (princ i))
+(sdl2:with-window (window :flags '(:opengl :resizable)))
+(in-package :lispbot)
+(when (= bunnies 2) (princ "there will soon be many more"))
+
+Special forms:
+
+(if (> x 10) (princ "x is strictly greater than 10!"))
+(quote (10 bar))
+(progn (send-data socket "hello world") (get-data socket))
+(let ((x 10)) (princ x))
+(tagbody (go two) one (princ 1) (go three) two (princ 2) (go one) three (princ 3))
+
+Those all look similar, don't they? You have a name, and then parameters separated by spaces, and that's it. But what do they *do*?
+
+Let's quickly cover data, and then the code will make more sense.
+
+DATA
+
+Data comes in two parts: variables and values.
+
+A Lisp variable has a name, value, and binding type^. The *binding type* of a variable is always either lexical or dynamic (special), and has to do with when the value of a variable is looked-up during the creation of closures...which you don't care about at all now. Suffice to say, lexical variable are the closest thing to "local" variables that you will find in Lisp, and dynamic variables are the closest thing that you will find to "global" variables. Because dynamic/special/global variables not only have a different scope but also different *behavior* in Lisp, we use "earmuffs" around their names: *dynamic-variable*. Lexical variables usually created either using `let` or implicitly as function arguments:
+
+;; x, name-of-variable, and y are all lexical variables
+(let ((x 10)
+      (name-of-variable "x")
+  (princ x)
+  (princ name-of-variable)
+
+(defun print-plus-one (y)
+  (princ (+ y 1)))
+
+Comments are either ; for single lines or #| foo |# for multiple lines
+
+Dynamic variables are usually created using `defparameter`:
+
+;; surrounding asterisks are called "earmuffs", and are technically just part of the name (no special meaning to the implementation whatsoever), but convention is to use them for dynamic variables
+(defparameter *password* "1234")
+
+A Lisp value is a piece of data, such as...
+    - a string "foo"
+    - an integer -2
+    - a floating-point number 3.1416
+    - a boolean t (t = true, nil = () = false)
+    - a structure #S(SPECIAL-LIST :DATA (1 2 3) :LENGTH 3)
+    - a list (1 2 when "foo" (-3.5 ("bar baz") nil))
+    - a function object #<FUNCTION +>
+    - a symbol 'bar
+
+You've probably seen most of these before, except for maybe not lists and almost certainly not symbols.
+
+A *list* is an ordered...list...of values. It can have zero, one, two, or ten thousand things, either all of the same type, or all of different types. If you're a C programmer, think of it as a singley-linked list.
+
+A *symbol* is a name; symbols are used to name...
+    - variables
+    - functions
+    - macros
+    - packages
+    - special forms
+    - ...and pretty much everything that *can* be named
+
+If you add two numbers using (+ 1 2), you're creating a list with the first element being a symbol, and the other two elements being numbers. The Lisp implementation uses the symbol + to look up a function, and after it finds it, it calls it with the arguments 1 and 2. If you're a C programmer, think of a symbol as a pointer to a struct containing a string (which is what you show to the user) and a pointer to each of a lexical variable, function, macro, package, special form, datatype, dynamic variable, and a few other things for good measure. If you actually want to use a symbol *as a value*, instead of trying to use it to call a function or evaluate a variable, then you use the (quote foo) special form:
+
+(let ((x 10))
+  (princ (list x 20)))
+;; princ (10 20)
+
+(let ((y 20))
+  (princ (list (quote y) 30)))
+;; princ (y 30)
+
+(quote bar) is used commonly enough that we can abbreviate it using 'bar. In general, (quote ...) is used for *protecting things from being evaluated*. If the symbol x is evaluated in the middle of a form (print foo), it's treated is a variable, and evaluates to the value of the variable. If said symbol is quoted, it evaluates to...a symbol (itself). If a list (+ 1 2) is evaluated, it's treated as a function, macro, or special form call, depending on which one of those things the symbol names. If said list is quoted, it evaluates to...a list (itself):
+
+(let ((zuul 10))
+  (princ zuul)		;; prints 10
+  (princ 'zuul))	;; prints ZUUL
+
+(+ 1 2) => 3
+(quote (+ 1 2)) => (+ 1 2)
+'(+ 1 2) => (+ 1 2)
+(princ '(+ 1 2)) => (+ 1 2) ;; and prints (+ 1 2)
+
+In Lisp code printouts, => means "evaluates to".
+
+Now what?
+
+The best way to learn a new language is by writing something in it. Failing that, *reading* something in it is also a good bet. git clone https://github.com/fouric/lispbot , please. Let's go through lispbot.lisp:
+
+First, jump down to (defun run ...). Functions are created using the defun macro, the syntax for which is
+
+(defun FUNCTION-NAME (ARGUMENT-LIST)
+  FUNCTION-BODY)
+
+(defun add-two-numbers (a b)
+  (+ a b))
+
+(defun add-and-maybe-invert (a b &optional invert)
+  (let ((sum (+ a b)))
+    (if invert
+      (* -1 sum)
+      sum)))
