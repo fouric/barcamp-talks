@@ -4,7 +4,7 @@ First, let's get three things straight:
 
 (1) Lisp is a family of languages, and as such, there are many Lisps. However, about half the time, when someone says "Lisp", they are referring to Common Lisp, which is what I'm exclusively covering in this talk. From now on, whenever I say "Lisp", remember that I'm talking about Common Lisp only.
 (2) Common Lisp is not a purely functional language. Nor is it slow or large. It's not as difficult to learn as you might think, it has numerous optimizing native-code compilers, arrays and object-oriented programming features are built-in, and it's in active use today (not to mention having well over a dozen actively maintained implementations). Don't be scared of it.
-(3) I am going to lie to you in this talk. Possibly a lot. Why? Because I assume that you would rather learn enough Lisp to do something useful (like understand my OpenGL talk) then be given an agonizingly detailed (although technically correct) description of all the terms that we use to describe Lisp. I'll try to mark the lies with a "^"; if enough people are interested, then I'll correct them.
+(3) I am going to lie to you in this talk. Possibly a lot. Why? Because I assume that you would rather learn enough Lisp to do something useful (like understand my OpenGL talk) than be given an agonizingly detailed (although technically correct) description of all the terms that we use to describe Lisp. I'll try to mark the lies with a "^"; if enough people are interested, then I'll correct them.
 
 Now then. Here's the big question: "How do Lisp"? Here's the big answer: by doing code to data.
 
