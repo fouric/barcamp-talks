@@ -1,0 +1,6 @@
+OpenGL (...in Common Lisp)
+
+Sup. Today, all of you will (hopefully) write code that uses the OpenGL core profile to draw a triangle to the screen. Before that, however, let's get two things out of the way:
+
+(1) I do not know OpenGL nearly as well as Common Lisp, and as such, this talk is going to vaguely resemble the Arc Synthesis OpenGL tutorials by Jason McKesson (https://bitbucket.org/alfonse/gltut/wiki/Home). It's an excellent tutorial, and I recommend reading through it as well as Learn OpenGL by Joey de Vries (http://learnopengl.com/).
+(2) I assume that you know Common Lisp. Sort of. I assume that you can read function calls, decipher `let` blocks, understand loops (`dotimes`) and conditions (`if`, `when`, `unless`), and sort of have a vague idea of what macros do. You do *not* need to know about lambdas, closures, 

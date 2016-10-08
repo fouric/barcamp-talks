@@ -98,7 +98,7 @@ A Lisp variable has a name, value, and binding type^. The *binding type* of a va
 (defun print-plus-one (y)
   (princ (+ y 1)))
 
-Comments are either ; for single lines or #| foo |# for multiple lines
+Comments are either ; for single lines or #| foo |# for multiple lines. princ is just a function that prints data in a way meant for humans to read; the print function prints data for *Lisp* to read, and so we will prefer princ here.
 
 Dynamic variables are usually created using `defparameter`:
 
@@ -110,14 +110,22 @@ A Lisp value is a piece of data, such as...
     - an integer -2
     - a floating-point number 3.1416
     - a boolean t (t = true, nil = () = false)
+    - a single character #\a
     - a structure #S(SPECIAL-LIST :DATA (1 2 3) :LENGTH 3)
+        (this is an instance of a structure; the structure is named special-list, and it has two members, data and length)
     - a list (1 2 when "foo" (-3.5 ("bar baz") nil))
     - a function object #<FUNCTION +>
     - a symbol 'bar
 
 You've probably seen most of these before, except for maybe not lists and almost certainly not symbols.
 
-A *list* is an ordered...list...of values. It can have zero, one, two, or ten thousand things, either all of the same type, or all of different types. If you're a C programmer, think of it as a singley-linked list.
+A *list* is an ordered...list...of values. It can have zero, one, two, or ten thousand things, either all of the same type, or all of different types. If you're a C programmer, think of it as a singly-linked list. Examples of lists:
+
+    - (0)
+    - ()
+    - ((("hello") "world") "!")
+    - (#<FUNCTION *> 1 2)
+    - (- 10 4)
 
 A *symbol* is a name; symbols are used to name...
     - variables
@@ -126,6 +134,13 @@ A *symbol* is a name; symbols are used to name...
     - packages
     - special forms
     - ...and pretty much everything that *can* be named
+
+When written in code, symbols look like...words. If you see something like the following:
+
+(if (< x 10)
+  (princ "x is less than 10"))
+
+...then `if`, `<`, `x`, and `princ` are all symbols. `if` is naming a special form, `<` and `princ` are naming functions, and `x` is naming a variable, although you could certainly have, say, a variable named `<`.
 
 If you add two numbers using (+ 1 2), you're creating a list with the first element being a symbol, and the other two elements being numbers. The Lisp implementation uses the symbol + to look up a function, and after it finds it, it calls it with the arguments 1 and 2. If you're a C programmer, think of a symbol as a pointer to a struct containing a string (which is what you show to the user) and a pointer to each of a lexical variable, function, macro, package, special form, datatype, dynamic variable, and a few other things for good measure. If you actually want to use a symbol *as a value*, instead of trying to use it to call a function or evaluate a variable, then you use the (quote foo) special form:
 
@@ -151,6 +166,10 @@ If you add two numbers using (+ 1 2), you're creating a list with the first elem
 In Lisp code printouts, => means "evaluates to".
 
 Now what?
+
+Let's go back to functions, macros, and special forms.
+
+You know what a function is. A function has a name, return value, maybe a docstring or parameters, etc.
 
 The best way to learn a new language is by writing something in it. Failing that, *reading* something in it is also a good bet. git clone https://github.com/fouric/lispbot , please. Let's go through lispbot.lisp:
 
